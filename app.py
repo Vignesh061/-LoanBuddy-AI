@@ -4,7 +4,8 @@ import random
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, origins=["https://your-frontend-app.onrender.com", "http://localhost:5000"])
 
 # Loan type questions mapping
 LOAN_QUESTIONS = {
