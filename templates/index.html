@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoanMate AI - Your Smart Loan Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+        }
+
+        nav {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links button {
+            background: none;
+            border: none;
+            color: #555;
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.3s;
+            padding: 5px 10px;
+        }
+
+        .nav-links button:hover {
+            color: #1976d2;
+        }
+
+        .nav-links button.active {
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Home Page */
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .feature-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .cta-button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #1565c0;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #1976d2;
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .chat-header h3 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            white-space: pre-line;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            border: 1px solid #e0e0e0;
+            color: #333;
+        }
+
+        .message.user .message-content {
+            background: #1976d2;
+            color: white;
+        }
+
+        .sanction-letter {
+            background: white;
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .sanction-letter h4 {
+            color: #4caf50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .sanction-letter .app-id {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .sanction-letter .details {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        .sanction-letter .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .sanction-letter .download-btn {
+            width: 100%;
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .sanction-letter .download-btn:hover {
+            background: #45a049;
+        }
+
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            border-color: #1976d2;
+        }
+
+        .chat-input button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.3s;
+        }
+
+        .chat-input button:hover {
+            background: #1565c0;
+        }
+
+        .chat-input button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* About Page */
+        .about-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .about-section h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .about-section.problem h3 {
+            color: #f44336;
+        }
+
+        .about-section.solution h3 {
+            color: #4caf50;
+        }
+
+        .about-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .about-section ul li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .about-section ul li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #1976d2;
+            font-weight: bold;
+        }
+
+        /* Resources Page */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            justify-content: center;
+            margin-bottom:14.5rem;
+        }
+
+        /* Track Page */
+        .track-form {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+            margin-bottom:18rem;
+        }
+
+        .track-form input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 1rem;
+        }
+
+        /* Contact Page */
+        .contact-info {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+            margin-bottom:15rem;
+        }
+
+        .contact-info p {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+        }
+
+        footer p {
+            margin-bottom: 5px;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1976d2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo">🏦 LoanMate AI</div>
+            <div class="nav-links">
+                <button onclick="showPage('home')" id="nav-home" class="active">Home</button>
+                <button onclick="showPage('about')" id="nav-about">About</button>
+                <button onclick="showPage('assistant')" id="nav-assistant">Loan Assistant</button>
+                <button onclick="showPage('track')" id="nav-track">Track</button>
+                <button onclick="showPage('resources')" id="nav-resources">Resources</button>
+                <button onclick="showPage('contact')" id="nav-contact">Contact</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="hero">
+                <h1>🏦 LoanMate AI</h1>
+                <p>Your Smart Personal Loan Assistant</p>
+                <p style="font-size: 18px; color: #888;">Get loan approval in minutes, not days!</p>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="icon">⚡</div>
+                    <h3>Instant Processing</h3>
+                    <p>Get your loan sanctioned within minutes with AI-powered verification</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🤖</div>
+                    <h3>24/7 Availability</h3>
+                    <p>No branch visits required. Apply anytime, anywhere</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔒</div>
+                    <h3>Secure & Compliant</h3>
+                    <p>Bank-grade security with automated compliance checks</p>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="cta-button" onclick="showPage('assistant')">Start Your Loan Journey →</button>
+            </div>
+        </div>
+
+        <!-- About Page -->
+        <div id="about" class="page">
+            <h2 style="font-size: 36px; margin-bottom: 30px;">About LoanMate AI</h2>
+            
+            <div class="about-section problem">
+                <h3>🚨 The Problem</h3>
+                <ul>
+                    <li>Traditional loan sales rely on manual outreach and lengthy processing</li>
+                    <li>Customers face complex documentation and slow communication</li>
+                    <li>Sales executives struggle to manage multiple leads</li>
+                    <li>Result: Low conversion rates, high drop-offs, inconsistent experience</li>
+                </ul>
+            </div>
+
+            <div class="about-section solution">
+                <h3>✅ Our Solution</h3>
+                <p style="margin-bottom: 15px;">An Agentic AI-powered chatbot that replicates human loan sales executives, providing:</p>
+                <ul>
+                    <li><strong>Master Agent:</strong> Orchestrates the entire conversation flow</li>
+                    <li><strong>Sales Agent:</strong> Explains loan offers, tenure, and benefits</li>
+                    <li><strong>Verification Agent:</strong> Performs instant KYC checks</li>
+                    <li><strong>Underwriting Agent:</strong> Evaluates credit score and salary</li>
+                    <li><strong>Sanction Agent:</strong> Generates instant approval letters</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Assistant Page -->
+        <div id="assistant" class="page">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h3>🤖 LoanMate AI Assistant</h3>
+                    <p>Powered by Advanced Agentic AI</p>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be added here -->
+                </div>
+
+                <div class="chat-input">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Type your message..."
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button onclick="sendMessage()" id="sendButton">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Track Page -->
+        <div id="track" class="page">
+            <h2 style="font-size: 36px; margin-bottom: 30px; text-align: center;">Track Your Application</h2>
+            <div class="track-form">
+                <input type="text" placeholder="Enter Application ID (e.g., LM12345678)">
+                <button class="cta-button" style="width: 100%;">Track Application</button>
+            </div>
+        </div>
+
+        <!-- Resources Page -->
+        <div id="resources" class="page">
+            <h2 style="font-size: 36px; margin-bottom: 30px;">Resources</h2>
+            <div class="resources-grid">
+                <div class="about-section">
+                    <h3>📋 Eligibility Criteria</h3>
+                    <ul>
+                        <li>Minimum age: 21 years</li>
+                        <li>Minimum salary: ₹25,000/month</li>
+                        <li>Credit score: 700+</li>
+                        <li>Valid PAN & Aadhaar</li>
+                    </ul>
+                </div>
+                <div class="about-section">
+                    <h3>💰 Loan Details</h3>
+                    <ul>
+                        <li>Amount: ₹50K - ₹50L</li>
+                        <li>Tenure: 12 - 60 months</li>
+                        <li>Interest: 10.5% p.a. onwards</li>
+                        <li>Processing: Instant</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Page -->
+        <div id="contact" class="page">
+            <h2 style="font-size: 36px; margin-bottom: 30px; text-align: center;">Contact Us</h2>
+            <div class="contact-info">
+                <p style="margin-bottom: 25px; color: #666;">Have questions? We're here to help!</p>
+                <p>📧 Email: support@loanmate.ai</p>
+                <p>📞 Phone: 1800-123-4567</p>
+                <p>🕒 Hours: 24/7 Support</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>💡 LoanMate AI - Turning Conversations into Approvals</p>
+        <p style="font-size: 14px; opacity: 0.8;">© 2025 LoanMate AI. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Replace the entire <script> section in your index.html with this:
+
+const API_URL = 'http://localhost:5000/api';
+let isProcessing = false;
+let conversationStarted = false;
+
+// Store conversation state in memory
+let conversationState = {
+    state: 'initial',
+    user_data: {},
+    current_question_index: 0,
+    loan_questions: []
+};
+
+function showPage(pageName) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+
+    // Remove active class from all nav buttons
+    document.querySelectorAll('.nav-links button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Show selected page
+    document.getElementById(pageName).classList.add('active');
+    document.getElementById('nav-' + pageName).classList.add('active');
+
+    // Initialize chat if assistant page
+    if (pageName === 'assistant' && !conversationStarted) {
+        initializeChat();
+    }
+}
+
+async function initializeChat() {
+    conversationStarted = true;
+    try {
+        const response = await fetch(`${API_URL}/start_conversation`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        
+        // Update conversation state
+        conversationState.state = data.state;
+        conversationState.user_data = data.user_data || {};
+        conversationState.current_question_index = data.current_question_index || 0;
+        
+        addMessage('bot', data.message);
+    } catch (error) {
+        console.error('Error:', error);
+        addMessage('bot', 'Sorry, there was an error connecting to the server. Please make sure the Flask backend is running on port 5000.');
+    }
+}
+
+function addMessage(sender, text, sanctionData = null) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.textContent = text;
+
+    // Add sanction letter if approved
+    if (sanctionData) {
+        const sanctionLetter = createSanctionLetter(sanctionData);
+        contentDiv.appendChild(sanctionLetter);
+    }
+
+    messageDiv.appendChild(contentDiv);
+    messagesDiv.appendChild(messageDiv);
+
+    // Scroll to bottom
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function createSanctionLetter(userData) {
+    const letter = document.createElement('div');
+    letter.className = 'sanction-letter';
+    
+    const emi = calculateEMI(userData.loan_amount, 10.5, userData.tenure);
+    
+    letter.innerHTML = `
+        <h4>🎉 LOAN SANCTION LETTER</h4>
+        <div class="app-id">Application ID: ${userData.application_id}</div>
+        <div class="details">
+            <div class="detail-row">
+                <strong>Applicant Name:</strong>
+                <span>${userData.name}</span>
+            </div>
+            <div class="detail-row">
+                <strong>Loan Amount:</strong>
+                <span>₹${userData.loan_amount.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="detail-row">
+                <strong>Tenure:</strong>
+                <span>${userData.tenure} months</span>
+            </div>
+            <div class="detail-row">
+                <strong>Interest Rate:</strong>
+                <span>10.5% p.a.</span>
+            </div>
+            <div class="detail-row">
+                <strong>Monthly EMI:</strong>
+                <span>₹${emi.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="detail-row">
+                <strong>Credit Score:</strong>
+                <span>${userData.credit_score}</span>
+            </div>
+            <div class="detail-row">
+                <strong>Status:</strong>
+                <span style="color: #4caf50; font-weight: bold;">APPROVED ✅</span>
+            </div>
+        </div>
+        <button class="download-btn" onclick="downloadSanctionLetter()">
+            📥 Download Sanction Letter
+        </button>
+    `;
+    
+    return letter;
+}
+
+function calculateEMI(principal, rate, tenure) {
+    const r = rate / (12 * 100);
+    const emi = principal * r * Math.pow(1 + r, tenure) / (Math.pow(1 + r, tenure) - 1);
+    return Math.round(emi);
+}
+
+function downloadSanctionLetter() {
+    alert('PDF download feature will be implemented with backend integration');
+}
+
+function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+}
+
+async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+
+    if (!message || isProcessing) return;
+
+    // Add user message
+    addMessage('user', message);
+    input.value = '';
+
+    // Disable input
+    isProcessing = true;
+    document.getElementById('sendButton').disabled = true;
+    input.disabled = true;
+
+    // Show typing indicator
+    showTypingIndicator();
+
+    try {
+        const response = await fetch(`${API_URL}/send_message`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                state: conversationState.state,
+                user_data: conversationState.user_data,
+                current_question_index: conversationState.current_question_index,
+                loan_questions: conversationState.loan_questions
+            })
+        });
+
+        const data = await response.json();
+
+        // Update conversation state
+        conversationState.state = data.state;
+        conversationState.user_data = data.user_data || conversationState.user_data;
+        conversationState.current_question_index = data.current_question_index || 0;
+        conversationState.loan_questions = data.loan_questions || conversationState.loan_questions;
+
+        // Hide typing indicator
+        hideTypingIndicator();
+
+        // Add bot response
+        if (data.state === 'approved' && data.user_data) {
+            addMessage('bot', data.message, data.user_data);
+        } else {
+            addMessage('bot', data.message);
+        }
+
+        // Re-enable input if conversation not completed
+        if (data.state !== 'completed' && data.state !== 'rejected') {
+            isProcessing = false;
+            document.getElementById('sendButton').disabled = false;
+            input.disabled = false;
+            input.focus();
+        }
+    } catch (error) {
+        hideTypingIndicator();
+        console.error('Error:', error);
+        addMessage('bot', 'Sorry, there was an error processing your message. Please try again.');
+        isProcessing = false;
+        document.getElementById('sendButton').disabled = false;
+        input.disabled = false;
+    }
+}
+
+function showTypingIndicator() {
+    const messagesDiv = document.getElementById('chatMessages');
+    const indicator = document.createElement('div');
+    indicator.className = 'message bot';
+    indicator.id = 'typingIndicator';
+    indicator.innerHTML = `
+        <div class="typing-indicator active">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+    messagesDiv.appendChild(indicator);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+    </script>
+</body>
+</html>
