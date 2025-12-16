@@ -604,244 +604,248 @@
     </footer>
 
     <script>
-        // Replace the entire <script> section in your index.html with this:
+        // FIXED: Use relative URL that works both locally and on Render
+        const API_URL = window.location.origin + '/api';
+        
+        let isProcessing = false;
+        let conversationStarted = false;
 
-//const API_URL = 'http://localhost:5000/api';
-// const API_URL = window.location.hostname === 'localhost' 
-//     ? 'http://localhost:5000/api' 
-//     : 'https://your-backend-app-name.onrender.com/api';
-const API_URL = 'https://your-backend-app-name.onrender.com/api';
-let isProcessing = false;
-let conversationStarted = false;
+        // Store conversation state in memory
+        let conversationState = {
+            state: 'initial',
+            user_data: {},
+            current_question_index: 0,
+            loan_questions: []
+        };
 
-// Store conversation state in memory
-let conversationState = {
-    state: 'initial',
-    user_data: {},
-    current_question_index: 0,
-    loan_questions: []
-};
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
 
-function showPage(pageName) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-links button').forEach(btn => {
+                btn.classList.remove('active');
+            });
 
-    // Remove active class from all nav buttons
-    document.querySelectorAll('.nav-links button').forEach(btn => {
-        btn.classList.remove('active');
-    });
+            // Show selected page
+            document.getElementById(pageName).classList.add('active');
+            document.getElementById('nav-' + pageName).classList.add('active');
 
-    // Show selected page
-    document.getElementById(pageName).classList.add('active');
-    document.getElementById('nav-' + pageName).classList.add('active');
-
-    // Initialize chat if assistant page
-    if (pageName === 'assistant' && !conversationStarted) {
-        initializeChat();
-    }
-}
-
-async function initializeChat() {
-    conversationStarted = true;
-    try {
-        const response = await fetch(`${API_URL}/start_conversation`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+            // Initialize chat if assistant page
+            if (pageName === 'assistant' && !conversationStarted) {
+                initializeChat();
             }
-        });
-
-        const data = await response.json();
-        
-        // Update conversation state
-        conversationState.state = data.state;
-        conversationState.user_data = data.user_data || {};
-        conversationState.current_question_index = data.current_question_index || 0;
-        
-        addMessage('bot', data.message);
-    } catch (error) {
-        console.error('Error:', error);
-        addMessage('bot', 'Sorry, there was an error connecting to the server. Please make sure the Flask backend is running on port 5000.');
-    }
-}
-
-function addMessage(sender, text, sanctionData = null) {
-    const messagesDiv = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}`;
-
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.textContent = text;
-
-    // Add sanction letter if approved
-    if (sanctionData) {
-        const sanctionLetter = createSanctionLetter(sanctionData);
-        contentDiv.appendChild(sanctionLetter);
-    }
-
-    messageDiv.appendChild(contentDiv);
-    messagesDiv.appendChild(messageDiv);
-
-    // Scroll to bottom
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function createSanctionLetter(userData) {
-    const letter = document.createElement('div');
-    letter.className = 'sanction-letter';
-    
-    const emi = calculateEMI(userData.loan_amount, 10.5, userData.tenure);
-    
-    letter.innerHTML = `
-        <h4>🎉 LOAN SANCTION LETTER</h4>
-        <div class="app-id">Application ID: ${userData.application_id}</div>
-        <div class="details">
-            <div class="detail-row">
-                <strong>Applicant Name:</strong>
-                <span>${userData.name}</span>
-            </div>
-            <div class="detail-row">
-                <strong>Loan Amount:</strong>
-                <span>₹${userData.loan_amount.toLocaleString('en-IN')}</span>
-            </div>
-            <div class="detail-row">
-                <strong>Tenure:</strong>
-                <span>${userData.tenure} months</span>
-            </div>
-            <div class="detail-row">
-                <strong>Interest Rate:</strong>
-                <span>10.5% p.a.</span>
-            </div>
-            <div class="detail-row">
-                <strong>Monthly EMI:</strong>
-                <span>₹${emi.toLocaleString('en-IN')}</span>
-            </div>
-            <div class="detail-row">
-                <strong>Credit Score:</strong>
-                <span>${userData.credit_score}</span>
-            </div>
-            <div class="detail-row">
-                <strong>Status:</strong>
-                <span style="color: #4caf50; font-weight: bold;">APPROVED ✅</span>
-            </div>
-        </div>
-        <button class="download-btn" onclick="downloadSanctionLetter()">
-            📥 Download Sanction Letter
-        </button>
-    `;
-    
-    return letter;
-}
-
-function calculateEMI(principal, rate, tenure) {
-    const r = rate / (12 * 100);
-    const emi = principal * r * Math.pow(1 + r, tenure) / (Math.pow(1 + r, tenure) - 1);
-    return Math.round(emi);
-}
-
-function downloadSanctionLetter() {
-    alert('PDF download feature will be implemented with backend integration');
-}
-
-function handleKeyPress(event) {
-    if (event.key === 'Enter') {
-        sendMessage();
-    }
-}
-
-async function sendMessage() {
-    const input = document.getElementById('userInput');
-    const message = input.value.trim();
-
-    if (!message || isProcessing) return;
-
-    // Add user message
-    addMessage('user', message);
-    input.value = '';
-
-    // Disable input
-    isProcessing = true;
-    document.getElementById('sendButton').disabled = true;
-    input.disabled = true;
-
-    // Show typing indicator
-    showTypingIndicator();
-
-    try {
-        const response = await fetch(`${API_URL}/send_message`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: message,
-                state: conversationState.state,
-                user_data: conversationState.user_data,
-                current_question_index: conversationState.current_question_index,
-                loan_questions: conversationState.loan_questions
-            })
-        });
-
-        const data = await response.json();
-
-        // Update conversation state
-        conversationState.state = data.state;
-        conversationState.user_data = data.user_data || conversationState.user_data;
-        conversationState.current_question_index = data.current_question_index || 0;
-        conversationState.loan_questions = data.loan_questions || conversationState.loan_questions;
-
-        // Hide typing indicator
-        hideTypingIndicator();
-
-        // Add bot response
-        if (data.state === 'approved' && data.user_data) {
-            addMessage('bot', data.message, data.user_data);
-        } else {
-            addMessage('bot', data.message);
         }
 
-        // Re-enable input if conversation not completed
-        if (data.state !== 'completed' && data.state !== 'rejected') {
-            isProcessing = false;
-            document.getElementById('sendButton').disabled = false;
-            input.disabled = false;
-            input.focus();
+        async function initializeChat() {
+            conversationStarted = true;
+            try {
+                const response = await fetch(`${API_URL}/start_conversation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Update conversation state
+                conversationState.state = data.state;
+                conversationState.user_data = data.user_data || {};
+                conversationState.current_question_index = data.current_question_index || 0;
+                
+                addMessage('bot', data.message);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('bot', `Sorry, there was an error connecting to the server. Error: ${error.message}`);
+            }
         }
-    } catch (error) {
-        hideTypingIndicator();
-        console.error('Error:', error);
-        addMessage('bot', 'Sorry, there was an error processing your message. Please try again.');
-        isProcessing = false;
-        document.getElementById('sendButton').disabled = false;
-        input.disabled = false;
-    }
-}
 
-function showTypingIndicator() {
-    const messagesDiv = document.getElementById('chatMessages');
-    const indicator = document.createElement('div');
-    indicator.className = 'message bot';
-    indicator.id = 'typingIndicator';
-    indicator.innerHTML = `
-        <div class="typing-indicator active">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    `;
-    messagesDiv.appendChild(indicator);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+        function addMessage(sender, text, sanctionData = null) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
 
-function hideTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
-    if (indicator) {
-        indicator.remove();
-    }
-}
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+
+            // Add sanction letter if approved
+            if (sanctionData) {
+                const sanctionLetter = createSanctionLetter(sanctionData);
+                contentDiv.appendChild(sanctionLetter);
+            }
+
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+
+            // Scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function createSanctionLetter(userData) {
+            const letter = document.createElement('div');
+            letter.className = 'sanction-letter';
+            
+            const emi = calculateEMI(userData.loan_amount, 10.5, userData.tenure);
+            
+            letter.innerHTML = `
+                <h4>🎉 LOAN SANCTION LETTER</h4>
+                <div class="app-id">Application ID: ${userData.application_id}</div>
+                <div class="details">
+                    <div class="detail-row">
+                        <strong>Applicant Name:</strong>
+                        <span>${userData.name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Loan Amount:</strong>
+                        <span>₹${userData.loan_amount.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Tenure:</strong>
+                        <span>${userData.tenure} months</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Interest Rate:</strong>
+                        <span>10.5% p.a.</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Monthly EMI:</strong>
+                        <span>₹${emi.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Credit Score:</strong>
+                        <span>${userData.credit_score}</span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Status:</strong>
+                        <span style="color: #4caf50; font-weight: bold;">APPROVED ✅</span>
+                    </div>
+                </div>
+                <button class="download-btn" onclick="downloadSanctionLetter()">
+                    📥 Download Sanction Letter
+                </button>
+            `;
+            
+            return letter;
+        }
+
+        function calculateEMI(principal, rate, tenure) {
+            const r = rate / (12 * 100);
+            const emi = principal * r * Math.pow(1 + r, tenure) / (Math.pow(1 + r, tenure) - 1);
+            return Math.round(emi);
+        }
+
+        function downloadSanctionLetter() {
+            alert('PDF download feature will be implemented with backend integration');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+
+            if (!message || isProcessing) return;
+
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+
+            // Disable input
+            isProcessing = true;
+            document.getElementById('sendButton').disabled = true;
+            input.disabled = true;
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch(`${API_URL}/send_message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        state: conversationState.state,
+                        user_data: conversationState.user_data,
+                        current_question_index: conversationState.current_question_index,
+                        loan_questions: conversationState.loan_questions
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Update conversation state
+                conversationState.state = data.state;
+                conversationState.user_data = data.user_data || conversationState.user_data;
+                conversationState.current_question_index = data.current_question_index || 0;
+                conversationState.loan_questions = data.loan_questions || conversationState.loan_questions;
+
+                // Hide typing indicator
+                hideTypingIndicator();
+
+                // Add bot response
+                if (data.state === 'approved' && data.user_data) {
+                    addMessage('bot', data.message, data.user_data);
+                } else {
+                    addMessage('bot', data.message);
+                }
+
+                // Re-enable input if conversation not completed
+                if (data.state !== 'completed' && data.state !== 'rejected') {
+                    isProcessing = false;
+                    document.getElementById('sendButton').disabled = false;
+                    input.disabled = false;
+                    input.focus();
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('Error:', error);
+                addMessage('bot', `Sorry, there was an error processing your message. Error: ${error.message}`);
+                isProcessing = false;
+                document.getElementById('sendButton').disabled = false;
+                input.disabled = false;
+            }
+        }
+
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const indicator = document.createElement('div');
+            indicator.className = 'message bot';
+            indicator.id = 'typingIndicator';
+            indicator.innerHTML = `
+                <div class="typing-indicator active">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            messagesDiv.appendChild(indicator);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
     </script>
 </body>
 </html>

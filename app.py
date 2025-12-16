@@ -2,10 +2,12 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import random
 from datetime import datetime
+import os
 
 app = Flask(__name__)
-# CORS(app)
-CORS(app, origins=["https://your-frontend-app.onrender.com"])
+
+# FIXED: Allow all origins for CORS
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Loan type questions mapping
 LOAN_QUESTIONS = {
@@ -356,4 +358,6 @@ def move_to_kyc_verification(user_data):
     }
 
 if __name__ == '__main__':
-    app.run()
+    # Get port from environment variable (Render sets this automatically)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
