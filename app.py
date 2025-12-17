@@ -122,7 +122,7 @@ def index():
 @app.route('/api/start_conversation', methods=['POST'])
 def start_conversation():
     return jsonify({
-        'message': "👋 Hello! I'm LoanMate AI, your personal loan assistant. I'm here to help you get a loan approved in minutes!\n\nMay I know your name to get started?",
+        'message': "👋 Hello! I'm LoanBuddy AI, your personal loan assistant. I'm here to help you get a loan approved in minutes!\n\nMay I know your name to get started?",
         'state': 'awaiting_name',
         'user_data': {},
         'current_question_index': 0
