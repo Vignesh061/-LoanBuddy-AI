@@ -159,24 +159,5 @@ Content-Type: application/json
 
 ---
 
-## 📈 Future Enhancements
-
-🔹 Real KYC API integration (Aadhaar/PAN verification)  
-🔹 Live credit bureau integration (CIBIL/Experian)  
-🔹 PDF generation for sanction letters  
-🔹 SMS/Email notifications  
-🔹 Document upload support  
-🔹 Payment gateway integration  
-🔹 Multi-language support  
-🔹 Admin dashboard  
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-- Report bugs
-- Suggest features
-- Submit pull requests
 
 ---
